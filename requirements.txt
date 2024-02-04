@@ -1,0 +1,3 @@
+pydicom
+argparse
+pyinstaller
