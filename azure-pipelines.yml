@@ -1,0 +1,130 @@
+trigger:
+- none
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- checkout: self
+
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      sudo echo the current working directory is...
+      pwd
+      sudo apt-get install tree
+      tree
+      
+      sudo echo working directory set to...
+      pwd
+  displayName: 'Check directory structure'
+
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      sudo apt update && sudo apt upgrade -y
+      sudo apt install python3
+      sudo apt install python3-pip
+  displayName: 'Installing python3 and pip'
+  
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+      source $HOME/.cargo/env
+      rustc --version
+  displayName: 'Install Rust'
+
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      sudo pip3 install --upgrade pip
+      sudo pip3 install pydicom
+      sudo pip3 install pyinstaller
+      sudo pip3 install pyoxidizer
+  displayName: 'Upgrade pip and pip install modules'
+
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      python3 --version
+  displayName: 'Check python version'
+
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+     cd src
+     python3 -m packMange
+  displayName: 'Attempt to start up packMange'
+
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+     cd $(Build.SourcesDirectory)
+     echo the working directory is...
+     pwd
+     python3 -m unittest
+  displayName: 'Run unit tests'
+
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+     cd src
+     pyinstaller ./packMange.spec
+  displayName: 'Create executable with pyinstaller'
+
+# - task: Bash@3
+#   inputs:
+#     targetType: 'inline'
+#     script: |
+#       cd $(Build.SourcesDirectory)
+#       cd src
+#       pyoxidizer build
+#   displayName: 'PyOxidizer attempt to build multi-platofrm exe'
+
+
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      cd $(Build.SourcesDirectory)
+      sudo echo the current working directory is...
+      pwd
+      sudo apt-get install tree
+      tree
+      
+      sudo echo working directory set to...
+      pwd
+  displayName: 'Second check fo directory structure'
+
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      cd $(Build.SourcesDirectory)/src/dist/packMange
+  displayName: 'Check if packMange executable runs'
+
+- task: PublishPipelineArtifact@1
+  displayName: "Publish packMange executable after generation by pyinstaller"
+  condition: always()
+  inputs:
+    targetPath: "$(Build.SourcesDirectory)/src/dist/packMange"
+    artifact: "packMange"
+    publishLocation: "pipeline"
+
+# - task: Bash@3
+#   inputs:
+#     targetType: 'inline'
+#     script: |
+#       cd $(Build.SourcesDirectory)
+#       cd src/dist/packMange
+#       ./packMange pack --PARENT https://elektasoftwarefactory.visualstudio.com/TSM/_git/elekta-testing-test-data?path=/DicomData --PATIENT XProfessor_HFSHead_CBCT_17.41.35 --VERSION 1.0.0
+#   displayName: 'Attempting to upload package to azure feed'
