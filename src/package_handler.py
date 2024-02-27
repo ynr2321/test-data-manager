@@ -113,16 +113,5 @@ class PackageHandler():
         tree.write(nuget_config_file, encoding="utf-8", xml_declaration=True)
 
    
-
-
-# Testing unpack -
-#testnuget_feed = r"C:\Users\ynooe11004\Documents\TDM_nuget_feed" # change to azure feed once set up
-#testazure_nuget_feed = "https://elektasoftwarefactory.pkgs.visualstudio.com/TSM/_packaging/test-data/nuget/v3/index.json"
-#testapikey = ''
-#dest_path = r"C:\Users\ynooe11004\Documents\TDM_target"
-
-
-#testhandler = PackageHandler(testnuget_feed, testazure_nuget_feed, testapikey)
-#testhandler.unpack_version('Daniel_Cranium',dest_path, '1.0.3')
   
  
