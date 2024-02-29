@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_submodules
 json_submodules = collect_submodules('json')
-shutil_submodules = collect_submodules('shutil')y
+shutil_submodules = collect_submodules('shutil')
 pydicom_submodules = collect_submodules('pydicom')
 collected_submodules = json_submodules + pydicom_submodules + shutil_submodules
 
