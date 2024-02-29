@@ -22,13 +22,13 @@ class TestPackageHandler(unittest.TestCase):
         with mock.patch('subprocess.run') as mock_subprocess_run:
             with mock.patch('os.system'):
         
-                tst_pkg_hndlr = PackageHandler('fake nuget feed', 'fakeAPIKEY=cjsaf4354iofj343')
-                tst_pkg_hndlr.unpack_version('Fake_Patient',r'dir/target','1.0.0')
+                tst_pkg_hndlr = PackageHandler('fake nuget feed', 'fake_azure_feed', 'fakeAPIKEY=cjsaf4354iofj343')
+                tst_pkg_hndlr.unpack_version('Fake_Patient',r'dir/target','fake_azure_feed')
 
                 # asserts
                 mock_subprocess_run.assert_called_once
                 self.assertEqual(tst_pkg_hndlr.unpack_command, 
-                'nuget install Fake_Patient -Version 1.0.0 -OutputDirectory dir/target')
+                'nuget install Fake_Patient -OutputDirectory dir/target -Source fake_azure_feed')
                 
                 
                        
@@ -43,7 +43,7 @@ class TestPackageHandler(unittest.TestCase):
                     with mock.patch('helper.get_descript_from_nuspec') as mock_helper_func1:
                         with mock.patch('helper.get_descriptions') as mock_helper_func2:
                         
-                            tst_pkg_hndlr = PackageHandler('fake nuget feed', '<fakeASIkey>')
+                            tst_pkg_hndlr = PackageHandler('fake nuget feed', 'fake azure nuget feed', '<fakeAPIkey>')
                             # pre-setting package_path attribute since it is determined from terminal output during the method
                             tst_pkg_hndlr.package_path = r'nuget_feed/dummy.pkg'
                             tst_pkg_hndlr.pack(dummy_nuspec_path)
@@ -51,7 +51,7 @@ class TestPackageHandler(unittest.TestCase):
                             # asserts
                             mock_subprocess_run.assert_called_once
                             self.assertEqual(tst_pkg_hndlr.pack_command, 
-                            'nuget pack nuget_feed/dummy_nuspec -OutputDirectory fake nuget feed')
+                            'nuget pack "nuget_feed/dummy_nuspec" -OutputDirectory "fake nuget feed"')
                             self.assertEqual(tst_pkg_hndlr.add_command, 
                             'nuget add nuget_feed/dummy.pkg -Source fake nuget feed')
                     
@@ -77,7 +77,7 @@ class TestPackageHandler(unittest.TestCase):
                 # with mock.patch('xml.etree.ElementTree.ElementTree.write') as mock_tree_write:
                     
                     # instantiating and adding package source
-                    mock_PackageHandler1 = PackageHandler('dummy/path', '<fakeAPIkey>')
+                    mock_PackageHandler1 = PackageHandler('dummy/path', 'fake azure feed', '<fakeAPIkey>')
                     mock_PackageHandler1.add_package_source(testing_config_path, 'TEST_SOURCE', 'FAKE_SOURCE')
                     
                     # setting expected add element
@@ -111,3 +111,5 @@ class TestPackageHandler(unittest.TestCase):
                 
 if __name__ == '__main__':
     unittest.main()
+    
+    
