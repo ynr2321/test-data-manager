@@ -4,6 +4,7 @@ import pydicom
 import pydicom.data
 from pydicom.data import get_testdata_file
 import json
+import helper
 
 class DicomParser:
     def __init__(self, dicom_directory_path):
@@ -25,22 +26,32 @@ class DicomParser:
         # creating manifest file
         manifest_file_path = os.path.join(self.manifest_folder_path,self.manifest_filename) + '.txt'
         self.manifest_file_path = manifest_file_path # storing
-        dicom_files = [x for x in os.listdir(self.dicom_directory_path) if x.endswith(".dcm")]
+        #dicom_files = [x for x in os.listdir(self.dicom_directory_path) if x.endswith(".dcm")]
+        dicom_files = [x for x in helper.get_all_files_in_tree(self.dicom_directory_path) if x.endswith(".dcm")]
         print()
-    
         
         manifestation = {'first_name': 'unknown',
                            'SOP_identifiers':'unknown'}
         
         # iteratively parsing dicom files
-        for dicom_filename in dicom_files:
-            read_dicom = pydicom.dcmread(self.dicom_directory_path + '/' + dicom_filename, force = True) # print to see all data
-            self.dcm_read_list.append(read_dicom)
-            self.sop_instance_uid_list.append(read_dicom.SOPInstanceUID)
-            # extracting patient name (should be consistent across all files)
-            if dicom_filename == dicom_files[0]:
-                first_name = read_dicom.PatientName.given_name
-        
+        print(dicom_files)
+        if len(dicom_files) > 0:
+            try:
+                for dicom_file_path in dicom_files:
+                    read_dicom = pydicom.dcmread(dicom_file_path, force = True) # print to see all data
+                    self.dcm_read_list.append(read_dicom)
+                    self.sop_instance_uid_list.append(read_dicom.SOPInstanceUID)
+                    # extracting patient name (should be consistent across all files)
+                    if dicom_file_path == dicom_files[0]:
+                        first_name = read_dicom.PatientName.given_name
+            except:
+                first_name = 'Could not parse dicom file / incorrect file type'
+                self.sop_instance_uid_list = ['Could not parse dicom file / incorrect file type']
+        else:
+            first_name = 'Could not parse dicom file / incorrect file type'
+            self.sop_instance_uid_list = ['Could not parse dicom file / incorrect file type']
+            
+            
         # modifying manifest dict
         manifestation['first_name'] = first_name
         manifestation['SOP_identifiers'] = self.sop_instance_uid_list

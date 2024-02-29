@@ -7,6 +7,7 @@ import re
 import argparse
 import pydicom
 import helper
+import numpy as np
 
 def color_invert(rgb):
     new_rgb = list(rgb)
@@ -35,6 +36,24 @@ def debug_helperGetDict():
     manifest_path = r"C:\Users\ynooe11004\Documents\TDM_patient_data\Jon_Bones_manifest\Jon_Bones_manifest.txt"
     dict1 = helper.get_dict_from_manifest(manifest_path)
     print(dict1)
+    
+def flatten_string(string):
+    formatted_string = json.dumps(string, separators=(",", ":"))
+    return formatted_string
 
-print('temp and its functions have been imported')
-debug_helperGetDict()
+def parse_package_list(file_path):
+    # Initialize an empty list to store the parsed data
+    parsed_data = []
+    # Open the file for reading
+    with open(file_path, 'r') as file:
+        # Iterate through each line in the file
+        for line in file:
+            # Split each line in the file into elements (delimiter being spaces)
+            entries = line.strip().split()
+            parsed_data.append(entries)
+   
+    return parsed_data
+
+result = parse_package_list(r"C:\Users\ynooe11004\Downloads\dummyparsepackageslist.txt")
+
+print("sandbox testing done")

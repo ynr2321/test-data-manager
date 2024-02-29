@@ -4,18 +4,25 @@ import shutil
 import json
 import xml.etree.ElementTree as ET
 
-# func to remove the temporary manifest folders from nuget feed after packing operation
-def clean_nuget_feed(nuget_feed, patient_name):
-    manifest_folder_path = os.path.join(nuget_feed,patient_name) + '_manifest'
-    shutil.rmtree(manifest_folder_path)
+
+def get_all_files_in_tree(directory):
+    file_list = []
+    for root, directories, files in os.walk(directory):
+        for filename in files:
+            file_list.append(os.path.join(root, filename))
+    return file_list
 
 def get_dict_from_manifest(manifest_file_path):
-    manifest_fd = os.open(manifest_file_path, os.O_RDONLY, 0o777)
-    
-    file_object = os.fdopen(manifest_fd, 'r')
-    data = file_object.read()
-    
-    dictionary = json.loads(data)
+    try:
+        # return manifest contents as dict
+        manifest_fd = os.open(manifest_file_path, os.O_RDONLY, 0o777)
+        file_object = os.fdopen(manifest_fd, 'r')
+        data = file_object.read()
+        dictionary = json.loads(data)
+    except:
+        print("Unable to parse manifest file - file may be corrupted. Please delete")
+        dictionary = {}
+
     return dictionary
 
 
@@ -69,7 +76,18 @@ def remove_white_space(string):
     processed_string = ''.join(char_list)
     return processed_string  
 
-# ------------------- TEMP -------------------------
+def parse_pkg_list_file(file_path):
+    # Initialize an empty list to store the parsed data
+    parsed_data = []
+    # Open the file for reading
+    with open(file_path, 'r') as file:
+        # Iterate through each line in the file
+        for line in file:
+            # Split each line in the file into elements (delimiter being spaces)
+            entries = line.strip().split()
+            parsed_data.append(entries)
+
+    return parsed_data
 
     
 # ---------------------------------- CHOOSER CLASS -----------------------------------
@@ -169,9 +187,8 @@ class chooser:
         self.unpack_version = str(input('Enter the version of the package you want to unpack (major.minor.patch): '))
         self.unpacking_folder_path = input('Enter unpacking destination: ')  
         
+
+    
         
-# # testing
-# nuget_feed = r"C:\Users\ynooe11004\Documents\test_data_management\TDM_nuget_feed"
-# choices = chooser()
-# choices.chooseVersionToUnpack(nuget_feed)
+        
 

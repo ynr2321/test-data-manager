@@ -22,7 +22,6 @@ class PackageHandler():
         self.nuget = r'nuget'
         self.config_file = None
         self.package_path = None
-        self.consider_duplicates_exist = False
         self.api_key = api_key
         self.consider_duplicates_exist = True # by default we warn of duplicate data (SOP IDs)
         print()
@@ -34,35 +33,35 @@ class PackageHandler():
         nuspec_name = os.path.basename(nuspec_path)
         patient_name = nuspec_name.rsplit('.nuspec',1)[0]
         
-        # Checks for duplicate data, creates package in the nuget_feed, adds that package to the feed 
-        # ---------------------------- Checking for duplicate DICOM data (only for local usage not with azure feed) ---------------------------- # 
 
-        # getting SOP list for file about to be packed and existing version
-        SOP_list = helper.get_descript_from_nuspec(nuspec_path)
-        Existing_SOP_lists = helper.get_descriptions(self.nuget_feed_path,patient_name)
+        # ---------------------------- Checking for duplicate packages in local feed (not azure feed) ------------------------------- # 
+
+        # # getting SOP list for file about to be packed and existing version
+        # SOP_list = helper.get_descript_from_nuspec(nuspec_path)
+        # Existing_SOP_lists = helper.get_descriptions(self.nuget_feed_path,patient_name)
         
-        for key in Existing_SOP_lists:
-            if SOP_list == Existing_SOP_lists[key]:
-                print(f'version: {key} of this Data contains identical SOP identifiers to data being packed')
-                # self.consider_duplicates_exist = True
+        # for key in Existing_SOP_lists:
+        #     if SOP_list == Existing_SOP_lists[key]:
+        #         print(f'version: {key} of this Data contains an identical description to data being packed')
+        #         # self.consider_duplicates_exist = True
     
-            if self.consider_duplicates_exist == True:
-                print('\nOne or more package containing identical SOP identifiers to this package exist. \n')
-                continue_choice = str(input(' Would you like to continue? (y/n)'))
-                if helper.remove_white_space(continue_choice) == 'y':
-                    self.consider_duplicates_exist = False
+        #     if self.consider_duplicates_exist == True:
+        #         print('\nOne or more package containing an identical description to this package exist. \n')
+        #         continue_choice = str(input(' Would you like to continue? (y/n)'))
+        #         if helper.remove_white_space(continue_choice) == 'y':
+        #             self.consider_duplicates_exist = False
 
                     
-            if self.consider_duplicates_exist == True:
-                print('\ncancelling pack command')
-                return
+        #     if self.consider_duplicates_exist == True:
+        #         print('\ncancelling pack command')
+        #         return
             
-            elif self.consider_duplicates_exist == False:
-                print('\nContinuing')
+        #     elif self.consider_duplicates_exist == False:
+        #         print('\nContinuing')
             
         # ---------------------------- Packing and adding to feed ---------------------------- # 
         # creating command string
-        self.pack_command = f'{self.nuget} pack {self.nuspec_path} -OutputDirectory {local_nuget_feed}'
+        self.pack_command = f'{self.nuget} pack "{self.nuspec_path}" -OutputDirectory "{self.nuget_feed_path}"'
         
         # getting package path
         print('creating package locally using command: ', self.pack_command)
@@ -81,14 +80,22 @@ class PackageHandler():
         # Running nuget commands
         subprocess.run(self.add_command, shell=True, capture_output=True, text=True) 
         
-        print('executing push command: \n', self.push_command)
+        print('Pushing package')
         subprocess.run(self.push_command)
 
         
-    def unpack_version(self, package_name_without_extension_or_path, output_directory, version):
-        self.unpack_command = f'{self.nuget} install {package_name_without_extension_or_path} -Version {version} -OutputDirectory {output_directory}'
-        print()
-        subprocess.run(self.unpack_command, shell=True)
+    def unpack_version(self, package_name_without_extension_or_path, output_directory, azure_nuget_feed, version=None):
+        # pulls / installs / unpacks latest package version unless version specified
+        if version != None:
+            self.unpack_command = f'{self.nuget} install {package_name_without_extension_or_path} -Version {version} -OutputDirectory {output_directory} -Source {azure_nuget_feed}'
+            print()
+            subprocess.run(self.unpack_command, shell=True)
+        else: 
+            self.unpack_command = f'{self.nuget} install {package_name_without_extension_or_path} -OutputDirectory {output_directory} -Source {azure_nuget_feed}'
+            print()
+            subprocess.run(self.unpack_command, shell=True)
+       # print('THE COMMAND JUST RUN IS: ', self.unpack_command) # REMOVE DEBUG
+            
 
 
     def add_package_source(self, nuget_config_file=None, key=None, value=None):
@@ -113,5 +120,17 @@ class PackageHandler():
         tree.write(nuget_config_file, encoding="utf-8", xml_declaration=True)
 
    
+
+
+# # # Testing unpack -
+# testnuget_feed = r"C:\Users\ynooe11004\Documents\TDM_nuget_feed" # change to azure feed once set up
+# testazure_nuget_feed = "https://elektasoftwarefactory.pkgs.visualstudio.com/TSM/_packaging/test-data/nuget/v3/index.json"
+# testapikey = ''
+# dest_path = r"C:\Users\ynooe11004\Documents\TDM_target"
+
+
+# testhandler = PackageHandler(testnuget_feed, testazure_nuget_feed, testapikey)
+# testhandler.pack()
+# testhandler.unpack_version('Daniel_Cranium',dest_path, '1.0.3')
   
  
